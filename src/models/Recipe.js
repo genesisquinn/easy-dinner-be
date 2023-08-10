@@ -18,6 +18,11 @@ const RecipeSchema = new mongoose.Schema({
         enum: ["Italian", "Asian", "Mediterranean", "American", "Caribbean", "Salads", "Other"],
         // required: true
     },
+
+    source: {
+        type: String,
+    },
+    
     image: {
         type: String, 
         // required: true

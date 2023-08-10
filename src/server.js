@@ -4,6 +4,7 @@ const cors = require('cors');
 const app = express();
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const recipeRoutes = require('./routes/recipeRoutes');
 
 
 dotenv.config()
@@ -31,3 +32,4 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
 
+app.use('/recipes', recipeRoutes);

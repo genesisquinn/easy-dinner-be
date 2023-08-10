@@ -7,3 +7,4 @@ db.once('open', function(){
     console.log('Connected')
 });
 
+require('./Recipe');
