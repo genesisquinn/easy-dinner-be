@@ -28,6 +28,13 @@ const RecipeSchema = new mongoose.Schema({
         // required: true
     },
 
+    liked: {
+        type: Boolean,
+        default: false,
+
+
+    }
+
 
 });
 

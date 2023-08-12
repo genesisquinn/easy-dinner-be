@@ -1,10 +1,6 @@
 const mongoose = require('mongoose');
 
 const groceryListSchema = new mongoose.Schema({
-    googleId: {
-        type: String,
-        required: true,
-    },
     recipes: [
         {
             recipeId: String,
@@ -22,4 +18,4 @@ const groceryListSchema = new mongoose.Schema({
     customItems: [String],
 });
 
-module.exports = GroceryList;
+module.exports = mongoose.model('List', groceryListSchema);

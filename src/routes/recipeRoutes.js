@@ -4,14 +4,17 @@ const Recipe = require('../models/Recipe');
 const path = require('path');
 const multer = require('multer');
 const { uploadFileToStorage } = require('../gcp')
+const { checkAuthenticated } = require('../auth');
 
 const upload = multer({
     storage: multer.memoryStorage()
 })
 
 
-router.post('/', upload.single('image'), async (req, res) => {
+
+router.post('/', checkAuthenticated, upload.single('image'), async (req, res) => {
     try {
+        req.isAuthenticated();
         const { name, instructions, ingredients, category, source} = req.body;
         console.log(ingredients)
 
@@ -39,8 +42,9 @@ router.post('/', upload.single('image'), async (req, res) => {
     }
 });
 
-router.get('/', async (req, res) => {
+router.get('/', checkAuthenticated, async (req, res) => {
     try {
+        req.isAuthenticated();
         const recipes = await Recipe.find();
 
         res.status(200).json({
@@ -52,8 +56,9 @@ router.get('/', async (req, res) => {
 });
 
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', checkAuthenticated, async (req, res) => {
     try {
+        req.isAuthenticated();
         const recipeId = req.params.id;
         const recipe = await Recipe.findById(recipeId);
 
@@ -68,7 +73,8 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-router.get('/recipes/search', async (req, res) => {
+router.get('/recipes/search', checkAuthenticated,  async (req, res) => {
+    req.isAuthenticated();
     const searchQuery = req.query.query; 
 
     try {
@@ -83,7 +89,8 @@ router.get('/recipes/search', async (req, res) => {
 });
 
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', checkAuthenticated, async (req, res) => {
+
     try {
         const recipeId = req.params.id;
         const updatedData = req.body;
@@ -110,7 +117,7 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', checkAuthenticated, async (req, res) => {
     try {
         const recipeId = req.params.id;
 
@@ -133,7 +140,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 
-router.get('/category/:category', async (req, res) => {
+router.get('/category/:category', checkAuthenticated,  async (req, res) => {
     try {
         const category = req.params.category;
 
