@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const groceryListSchema = new mongoose.Schema({
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User', // Reference the User model
+        required: true,
+    },
     recipes: [
         {
             recipeId: String,
@@ -18,4 +23,4 @@ const groceryListSchema = new mongoose.Schema({
     customItems: [String],
 });
 
-module.exports = mongoose.model('List', groceryListSchema); 
+module.exports = mongoose.model('GroceryList', groceryListSchema); 

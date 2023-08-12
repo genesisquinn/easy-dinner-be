@@ -31,10 +31,11 @@ router.post('/custom-item', checkAuthenticated, async (req, res) => {
 
     try {
         const groceryList = await GroceryList.findOneAndUpdate(
-            { user: req.body.user._id }, // Associate grocery list with the current user
+            { user: req.user._id }, // Use req.user._id to identify the user
             { $addToSet: { customItems: customItem } },
             { upsert: true, new: true }
         );
+        
 
         res.json(groceryList);
     } catch (error) {

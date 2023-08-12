@@ -14,16 +14,17 @@ const upload = multer({
 
 router.post('/', checkAuthenticated, upload.single('image'), async (req, res) => {
     try {
-        const { name, instructions, ingredients, category } = req.body;
-        const user = req.user._id; // Get the currently authenticated user's _id
+        const { name, instructions, ingredients, category, source } = req.body;
+        const user = req.user._id; 
 
         const imageUrl = await uploadFileToStorage(req.file);
 
         const newRecipe = new Recipe({
-            user: user, // Associate the recipe with the user's ID
+            user: user, 
             name: name,
             ingredients: ingredients,
             instructions: instructions,
+            source: source,
             category: category, 
             image: imageUrl,
         });
