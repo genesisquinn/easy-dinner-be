@@ -2,28 +2,7 @@ const express = require('express');
 const router = express.Router();
 const GroceryList = require('../models/GroceryList');
 const { checkAuthenticated } = require('../auth');
-
-router.post('/liked-recipe/:recipeId', checkAuthenticated, async (req, res) => {
-    try {
-        const recipeId = req.params.recipeId;
-        const recipe = await Recipe.findById(recipeId);
-
-        if (!recipe) {
-            return res.status(404).json({ message: 'Recipe not found' });
-        }
-
-        const groceryList = await GroceryList.findOneAndUpdate(
-            { user: req.user._id }, // Associate grocery list with the current user
-            { $addToSet: { likedRecipeIngredients: { $each: recipe.ingredients } } },
-            { upsert: true, new: true }
-        );
-
-        res.json(groceryList);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-});
+const Recipe = require('../models/Recipe');
 
 
 router.post('/custom-item', checkAuthenticated, async (req, res) => {

@@ -5,6 +5,7 @@ const path = require('path');
 const multer = require('multer');
 const { uploadFileToStorage } = require('../gcp')
 const { checkAuthenticated } = require('../auth');
+const GroceryList = require('../models/GroceryList');
 
 const upload = multer({
     storage: multer.memoryStorage()
@@ -146,6 +147,60 @@ router.get('/category/:category', checkAuthenticated, async (req, res) => {
         });
     } catch (err) {
         res.status(500).json({ error: 'An error occurred while fetching recipes by category.' });
+    }
+});
+
+router.post('/:recipeId/like', checkAuthenticated, async (req, res) => {
+    try {
+        const recipeId = req.params.recipeId;
+        const recipe = await Recipe.findById(recipeId);
+
+        if (!recipe) {
+            return res.status(404).json({ message: 'Recipe not found' });
+        }
+
+        const groceryList = await GroceryList.findOneAndUpdate(
+            { user: req.user._id },
+            {
+                $addToSet: { likedRecipeIngredients: { $each: recipe.ingredients } },
+            },
+            { upsert: true, new: true }
+        );
+
+        // Update recipes separately
+        const updatedGroceryList = await GroceryList.findOneAndUpdate(
+            { user: req.user._id },
+            {
+                $addToSet: { recipes: { recipeId, ingredients: recipe.ingredients } },
+            },
+            { new: true }
+        );
+
+        res.json(updatedGroceryList);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+
+router.post('/:recipeId/unlike', checkAuthenticated, async (req, res) => {
+    try {
+        const recipeId = req.params.recipeId;
+
+        const groceryList = await GroceryList.findOneAndUpdate(
+            { user: req.user._id },
+            {
+                $pull: { likedRecipeIngredients: { $in: recipe.ingredients } },
+                $pull: { recipes: { recipeId } },
+            },
+            { new: true }
+        );
+
+        res.json(groceryList);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
