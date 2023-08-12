@@ -1,6 +1,10 @@
 const mongoose = require ('mongoose');
 
 const RecipeSchema = new mongoose.Schema({
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    },
     name: {
         type: String, 
     
@@ -30,7 +34,7 @@ const RecipeSchema = new mongoose.Schema({
 
     liked: {
         type: Boolean,
-        default: false,
+        default: false
 
 
     }

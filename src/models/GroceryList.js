@@ -18,4 +18,4 @@ const groceryListSchema = new mongoose.Schema({
     customItems: [String],
 });
 
-module.exports = mongoose.model('List', groceryListSchema);
+module.exports = mongoose.model('List', groceryListSchema); 

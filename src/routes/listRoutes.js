@@ -1,19 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const GroceryList = require('../models/GroceryList');
+const { checkAuthenticated } = require('../auth');
 
-router.post('/grocery-list/liked-recipe/:recipeId', async (req, res) => {
-    const { recipeId } = req.params;
-    const googleId = req.user.googleId;
-
+router.post('/liked-recipe/:recipeId', checkAuthenticated, async (req, res) => {
     try {
+        const recipeId = req.params.recipeId;
         const recipe = await Recipe.findById(recipeId);
+
         if (!recipe) {
             return res.status(404).json({ message: 'Recipe not found' });
         }
 
         const groceryList = await GroceryList.findOneAndUpdate(
-            { googleId },
+            { user: req.user._id }, // Associate grocery list with the current user
             { $addToSet: { likedRecipeIngredients: { $each: recipe.ingredients } } },
             { upsert: true, new: true }
         );
@@ -25,13 +25,13 @@ router.post('/grocery-list/liked-recipe/:recipeId', async (req, res) => {
     }
 });
 
-router.post('/grocery-list/custom-item', async (req, res) => {
+
+router.post('/custom-item', checkAuthenticated, async (req, res) => {
     const { customItem } = req.body;
-    const googleId = req.user.googleId;
 
     try {
         const groceryList = await GroceryList.findOneAndUpdate(
-            { googleId },
+            { user: req.body.user._id }, // Associate grocery list with the current user
             { $addToSet: { customItems: customItem } },
             { upsert: true, new: true }
         );
@@ -43,13 +43,12 @@ router.post('/grocery-list/custom-item', async (req, res) => {
     }
 });
 
-router.delete('/grocery-list/item/:itemName', async (req, res) => {
-    const { itemName } = req.params; 
-    const googleId = req.user.googleId; 
+router.delete('/item/:itemName', checkAuthenticated, async (req, res) => {
+    const { itemName } = req.params;
 
     try {
         const groceryList = await GroceryList.findOneAndUpdate(
-            { googleId },
+            { user: req.user._id }, // Associate grocery list with the current user
             { $pull: { likedRecipeIngredients: itemName, customItems: itemName } },
             { new: true }
         );
@@ -62,17 +61,17 @@ router.delete('/grocery-list/item/:itemName', async (req, res) => {
 });
 
 
-router.get('/grocery-list', async (req, res) => {
-    const googleId = req.user.googleId;
 
+router.get('/', checkAuthenticated, async (req, res) => {
     try {
-        const groceryList = await GroceryList.findOne({ googleId });
+        const groceryList = await GroceryList.findOne({ user: req.user._id });
         res.json(groceryList);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
 
 module.exports = router;
 

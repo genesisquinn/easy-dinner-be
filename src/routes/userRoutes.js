@@ -15,30 +15,37 @@ router.post('/register', async (req, res) => {
 
         const user = new User({ username, email, password: hashedPassword });
         const registeredUser = await User.register(user, hashedPassword);
+
+        // Send a success JSON response
         res.status(201).json(registeredUser);
-        res.redirect('./recipes');
     } catch (error) {
+        // Send an error JSON response
         res.status(500).json({ message: 'Registration failed', error: error });
-        res.redirect('./register');
     }
 });
+
 
 
 router.post('/login', passport.authenticate('local'), async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
 
+        // Send a success JSON response
         res.json({
             message: 'Login successful',
             user: {
+                _id: user._id,
                 username: user.username,
             },
         });
     } catch (error) {
         console.error('Error fetching user data:', error);
+
+        // Send an error JSON response
         res.status(500).json({ message: 'An error occurred during login' });
     }
 });
+
 
 
 router.post('/signout', (req, res) => {

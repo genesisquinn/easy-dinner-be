@@ -14,19 +14,18 @@ const upload = multer({
 
 router.post('/', checkAuthenticated, upload.single('image'), async (req, res) => {
     try {
-        req.isAuthenticated();
-        const { name, instructions, ingredients, category, source} = req.body;
-        console.log(ingredients)
+        const { name, instructions, ingredients, category } = req.body;
+        const user = req.user._id; // Get the currently authenticated user's _id
 
         const imageUrl = await uploadFileToStorage(req.file);
 
         const newRecipe = new Recipe({
+            user: user, // Associate the recipe with the user's ID
             name: name,
             ingredients: ingredients,
             instructions: instructions,
             category: category, 
             image: imageUrl,
-            source: source
         });
 
         await newRecipe.save();
@@ -38,17 +37,16 @@ router.post('/', checkAuthenticated, upload.single('image'), async (req, res) =>
     } catch (err) {
         console.log(err)
         res.status(500).json({ msg: err, error: 'An error occurred while saving the recipe.' });
-        
     }
 });
 
+
 router.get('/', checkAuthenticated, async (req, res) => {
     try {
-        req.isAuthenticated();
-        const recipes = await Recipe.find();
+        const userRecipes = await Recipe.find({ user: req.user._id });
 
         res.status(200).json({
-            recipes: recipes,
+            recipes: userRecipes,
         });
     } catch (err) {
         res.status(500).json({ error: 'An error occurred while getting recipes.' });
@@ -56,22 +54,22 @@ router.get('/', checkAuthenticated, async (req, res) => {
 });
 
 
+
 router.get('/:id', checkAuthenticated, async (req, res) => {
     try {
-        req.isAuthenticated();
         const recipeId = req.params.id;
-        const recipe = await Recipe.findById(recipeId);
-
+        const recipe = await Recipe.findOne({ _id: recipeId, user: req.user._id });
 
         if (!recipe) {
             return res.status(404).json({ error: 'Recipe not found.' });
         }
 
-        res.json({success:true, recipe});
+        res.json({ success: true, recipe });
     } catch (error) {
         res.status(500).json({ message: error.message || 'Error Occurred' });
     }
 });
+
 
 router.get('/recipes/search', checkAuthenticated,  async (req, res) => {
     req.isAuthenticated();
@@ -90,15 +88,11 @@ router.get('/recipes/search', checkAuthenticated,  async (req, res) => {
 
 
 router.put('/:id', checkAuthenticated, async (req, res) => {
+    const recipeId = req.params.id;
+    const updatedData = req.body;
 
     try {
-        const recipeId = req.params.id;
-        const updatedData = req.body;
-        console.log('test');
-        console.log(req.body);
-
-
-        const recipe = await Recipe.findById(recipeId);
+        const recipe = await Recipe.findOne({ _id: recipeId, user: req.user._id });
 
         if (!recipe) {
             return res.status(404).json({ error: 'Recipe not found.' });
@@ -106,7 +100,6 @@ router.put('/:id', checkAuthenticated, async (req, res) => {
 
         recipe.set(updatedData);
         await recipe.save();
-
 
         res.status(200).json({
             message: 'Recipe updated successfully',
@@ -118,11 +111,10 @@ router.put('/:id', checkAuthenticated, async (req, res) => {
 });
 
 router.delete('/:id', checkAuthenticated, async (req, res) => {
+    const recipeId = req.params.id;
+
     try {
-        const recipeId = req.params.id;
-
-
-        const recipe = await Recipe.findById(recipeId);
+        const recipe = await Recipe.findOne({ _id: recipeId, user: req.user._id });
 
         if (!recipe) {
             return res.status(404).json({ error: 'Recipe not found.' });
@@ -140,15 +132,16 @@ router.delete('/:id', checkAuthenticated, async (req, res) => {
 });
 
 
-router.get('/category/:category', checkAuthenticated,  async (req, res) => {
+
+router.get('/category/:category', checkAuthenticated, async (req, res) => {
     try {
         const category = req.params.category;
 
-        const recipes = await Recipe.find({ category: category });
+        const userRecipesInCategory = await Recipe.find({ category: category, user: req.user._id });
 
         res.status(200).json({
             success: true,
-            recipes: recipes,
+            recipes: userRecipesInCategory,
         });
     } catch (err) {
         res.status(500).json({ error: 'An error occurred while fetching recipes by category.' });

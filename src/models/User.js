@@ -16,14 +16,17 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    // Additional fields for user-related data
-    // savedRecipes: [Schema.Types.ObjectId], // If using references
-    // groceryList: { type: Schema.Types.ObjectId }, // If using references
+    groceryList: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'List',
+    },
+    recipes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Recipe' }],
 });
 
 userSchema.plugin(passportLocalMongoose);
 
 module.exports = mongoose.model('User', userSchema);
+
 
 
 
