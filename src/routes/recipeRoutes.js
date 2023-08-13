@@ -6,6 +6,8 @@ const multer = require('multer');
 const { uploadFileToStorage } = require('../gcp')
 const { checkAuthenticated } = require('../auth');
 const GroceryList = require('../models/GroceryList');
+const LikedRecipe = require('../models/LikedRecipe');
+
 
 const upload = multer({
     storage: multer.memoryStorage()
@@ -150,6 +152,47 @@ router.get('/category/:category', checkAuthenticated, async (req, res) => {
     }
 });
 
+// router.post('/:recipeId/like', checkAuthenticated, async (req, res) => {
+//     try {
+//         const recipeId = req.params.recipeId;
+//         const recipe = await Recipe.findById(recipeId);
+
+//         if (!recipe) {
+//             return res.status(404).json({ message: 'Recipe not found' });
+//         }
+
+//         const isLiked = await LikedRecipe.findOne({
+//             user: req.user._id,
+//             recipe: recipeId,
+//         });
+
+//         if (!isLiked) {
+//             // If not liked, mark it as liked and update the liked property in the recipe
+//             recipe.liked = true;
+//             await recipe.save();
+
+//         const groceryList = await GroceryList.findOneAndUpdate(
+//             { user: req.user._id },
+//             {
+//                 $addToSet: { likedRecipeIngredients: { $each: recipe.ingredients } },
+//             },
+//             { upsert: true, new: true }
+//         );
+
+//         const likedRecipe = new LikedRecipe({
+//             user: req.user._id,
+//             recipe: recipeId,
+//         });
+
+//         await likedRecipe.save();
+
+//         res.json(updatedGroceryList);
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ message: 'Internal server error' });
+//     }
+// });
+
 router.post('/:recipeId/like', checkAuthenticated, async (req, res) => {
     try {
         const recipeId = req.params.recipeId;
@@ -159,24 +202,36 @@ router.post('/:recipeId/like', checkAuthenticated, async (req, res) => {
             return res.status(404).json({ message: 'Recipe not found' });
         }
 
-        const groceryList = await GroceryList.findOneAndUpdate(
-            { user: req.user._id },
-            {
-                $addToSet: { likedRecipeIngredients: { $each: recipe.ingredients } },
-            },
-            { upsert: true, new: true }
-        );
+        const isLiked = await LikedRecipe.findOne({
+            user: req.user._id,
+            recipe: recipeId,
+        });
 
-        // Update recipes separately
-        const updatedGroceryList = await GroceryList.findOneAndUpdate(
-            { user: req.user._id },
-            {
-                $addToSet: { recipes: { recipeId, ingredients: recipe.ingredients } },
-            },
-            { new: true }
-        );
+        if (!isLiked) {
+            // If not liked, mark it as liked and update the liked property in the recipe
+            recipe.liked = true;
+            await recipe.save();
 
-        res.json(updatedGroceryList);
+            const groceryList = await GroceryList.findOneAndUpdate(
+                { user: req.user._id },
+                {
+                    $addToSet: { likedRecipeIngredients: { $each: recipe.ingredients } },
+                },
+                { upsert: true, new: true }
+            );
+
+            const likedRecipe = new LikedRecipe({
+                user: req.user._id,
+                recipe: recipeId,
+            });
+
+            await likedRecipe.save();
+
+            res.json(groceryList); // Return the updated grocery list
+        } else {
+            // Recipe already liked by the user
+            res.status(400).json({ message: 'Recipe is already liked' });
+        }
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
@@ -188,20 +243,36 @@ router.post('/:recipeId/unlike', checkAuthenticated, async (req, res) => {
     try {
         const recipeId = req.params.recipeId;
 
-        const groceryList = await GroceryList.findOneAndUpdate(
-            { user: req.user._id },
-            {
-                $pull: { likedRecipeIngredients: { $in: recipe.ingredients } },
-                $pull: { recipes: { recipeId } },
-            },
-            { new: true }
-        );
+        // Remove from the LikedRecipe collection
+        await LikedRecipe.findOneAndDelete({
+            user: req.user._id,
+            recipe: recipeId,
+        });
 
-        res.json(groceryList);
+        // Update the liked property in the recipe to false
+        const recipe = await Recipe.findById(recipeId);
+        if (recipe) {
+            recipe.liked = false;
+            await recipe.save();
+
+            // Update the user's grocery list
+            await GroceryList.findOneAndUpdate(
+                { user: req.user._id },
+                {
+                    $pull: { likedRecipeIngredients: { $in: recipe.ingredients } },
+                    $pull: { recipes: { recipeId } },
+                },
+                { new: true }
+            );
+        }
+
+        res.json({ message: 'Recipe unliked successfully' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
+module.exports = router;
 
 module.exports = router;
