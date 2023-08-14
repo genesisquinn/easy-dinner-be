@@ -20,7 +20,7 @@ const RecipeSchema = new mongoose.Schema({
     category: {
         type: String,
         enum: ["Italian", "Asian", "Mediterranean", "American", "Caribbean", "Salads", "Other"],
-        // required: true
+
     },
 
     source: {
@@ -29,7 +29,7 @@ const RecipeSchema = new mongoose.Schema({
     
     image: {
         type: String, 
-        // required: true
+
     },
 
     liked: {

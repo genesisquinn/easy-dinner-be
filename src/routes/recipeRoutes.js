@@ -152,6 +152,7 @@ router.get('/category/:category', checkAuthenticated, async (req, res) => {
     }
 });
 
+
 router.post('/:recipeId/like', checkAuthenticated, async (req, res) => {
     try {
         const recipeId = req.params.recipeId;
@@ -166,36 +167,40 @@ router.post('/:recipeId/like', checkAuthenticated, async (req, res) => {
             recipe: recipeId,
         });
 
-        if (!isLiked) {
-            
-            recipe.liked = true;
-            await recipe.save();
-
-            const groceryList = await GroceryList.findOneAndUpdate(
-                { user: req.user._id },
-                {
-                    $addToSet: { likedRecipeIngredients: { $each: recipe.ingredients } },
-                },
-                { upsert: true, new: true }
-            );
-
-            const likedRecipe = new LikedRecipe({
-                user: req.user._id,
-                recipe: recipeId,
-            });
-
-            await likedRecipe.save();
-
-            res.json(groceryList); 
-        } else {
-            
-            res.status(400).json({ message: 'Recipe is already liked' });
+        if (isLiked) {
+            return res.status(400).json({ message: 'Recipe is already liked' });
         }
+
+        const likedRecipesCount = await LikedRecipe.countDocuments({ user: req.user._id });
+        if (likedRecipesCount >= 7) {
+            return res.status(400).json({ message: 'You have already liked 7 recipes.' });
+        }
+
+        recipe.liked = true;
+        await recipe.save();
+
+        const groceryList = await GroceryList.findOneAndUpdate(
+            { user: req.user._id },
+            {
+                $addToSet: { likedRecipeIngredients: { $each: recipe.ingredients } },
+            },
+            { upsert: true, new: true }
+        );
+
+        const likedRecipe = new LikedRecipe({
+            user: req.user._id,
+            recipe: recipeId,
+        });
+
+        await likedRecipe.save();
+
+        res.json(groceryList);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
 
 
 router.post('/:recipeId/unlike', checkAuthenticated, async (req, res) => {
@@ -214,7 +219,7 @@ router.post('/:recipeId/unlike', checkAuthenticated, async (req, res) => {
             recipe.liked = false;
             await recipe.save();
 
-            // Update the user's grocery list
+
             await GroceryList.findOneAndUpdate(
                 { user: req.user._id },
                 {
@@ -233,6 +238,18 @@ router.post('/:recipeId/unlike', checkAuthenticated, async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
+router.post('/reset', async (req, res) => {
+    try {
+        await Recipe.updateMany({}, { liked: false }); 
+        await LikedRecipe.deleteMany({});
+        res.json({ success: true, message: 'Liked recipes reset successfully.' });
+    } catch (error) {
+        console.error('Error resetting liked recipes:', error);
+        res.status(500).json({ success: false, message: 'Error resetting liked recipes.' });
+    }
+});
+
 
 
 module.exports = router;

@@ -2,11 +2,11 @@ const mongoose = require('mongoose');
 const groceryListSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User', // Reference the User model
+        ref: 'User', 
         required: true,
     },
-    likedRecipeIngredients: [String], // Array to store liked ingredients
-    customItems: [String], // Array to store custom items
+    likedRecipeIngredients: [String], 
+    customItems: [String], 
 });
 
 
