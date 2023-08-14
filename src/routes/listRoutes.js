@@ -10,11 +10,11 @@ router.post('/custom-item', checkAuthenticated, async (req, res) => {
 
     try {
         const groceryList = await GroceryList.findOneAndUpdate(
-            { user: req.user._id }, 
+            { user: req.user._id },
             { $addToSet: { customItems: customItem } },
             { upsert: true, new: true }
         );
-        
+
 
         res.json(groceryList);
     } catch (error) {
@@ -28,7 +28,7 @@ router.delete('/item/:itemName', checkAuthenticated, async (req, res) => {
 
     try {
         const groceryList = await GroceryList.findOneAndUpdate(
-            { user: req.user._id }, 
+            { user: req.user._id },
             { $pull: { likedRecipeIngredients: itemName, customItems: itemName } },
             { new: true }
         );
@@ -52,7 +52,27 @@ router.get('/', checkAuthenticated, async (req, res) => {
     }
 });
 
+router.post('/reset', checkAuthenticated, async (req, res) => {
+    const userId = req.body.userId;
+
+    try {
+        const groceryList = await GroceryList.findOne({ user: userId });
+        if (groceryList) {
+            groceryList.likedRecipeIngredients = [];
+            await groceryList.save();
+            res.json({ success: true, message: 'Liked recipes reset successfully.' });
+        } else {
+            res.status(404).json({ success: false, message: 'User not found.' });
+        }
+    } catch (error) {
+        console.error('Error resetting liked recipes:', error);
+        res.status(500).json({ success: false, message: 'Error resetting liked recipes.' });
+    }
+});
 
 
 module.exports = router;
+
+
+
 
