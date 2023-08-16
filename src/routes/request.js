@@ -6,7 +6,7 @@ const { OAuth2Client } = require('google-auth-library');
 
 router.post('/', async (req, res, next) => {
     console.log("Request for Auth")
-    res.header('Acess-Control-Allow-Origin', 'https://dinnermadeeasy.netlify.app/');
+    res.header('Access-Control-Allow-Origin', 'https://dinnermadeeasy.netlify.app/');
     // res.header('Referrer-Policy', 'no-referrer-when-downgrade');
 
     const redirectUrl = 'https://dinnermadeeasy.netlify.app/recipes';

@@ -6,7 +6,7 @@ const { OAuth2Client } = require('google-auth-library');
 
 const getUserData = async (access_token) => {
     const response = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${access_token}`);
-    return response.json();
+    // return response.json();
 
     const data = await response.json();
     console.log('data', data);
