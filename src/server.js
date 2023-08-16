@@ -16,12 +16,13 @@ const listRoutes = require('./routes/listRoutes');
 const userRoutes = require('./routes/userRoutes');
 const { configurePassport } = require('./auth');
 const authRouter = require('./routes/oauth');
+const requestRouter = require('./routes/request');
 
 
 dotenv.config()
 
 const corsOptions = {
-    origin: 'https://dinnermadeeasy.netlify.app',
+    origin: 'http://localhost:5173',
     methods: ['GET', 'POST', 'DELETE', 'PUT'],
     credentials: true
 }

@@ -16,7 +16,7 @@ router.get('/', async (req, res, next) => {
 
     const code = req.query.code;
     try {
-        const redirectUrl = 'https://dinnermadeeasy.netlify.app/recipes';
+        const redirectUrl = 'http://localhost:5173/recipes';
         const oAuth2Client = new OAuth2Client(
             process.env.CLIENT_ID,
             process.env.CLIENT_SECRET,
