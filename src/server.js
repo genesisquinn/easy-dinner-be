@@ -22,7 +22,7 @@ const requestRouter = require('./routes/request');
 dotenv.config()
 
 const corsOptions = {
-    origin: 'http://localhost:5173',
+    origin: 'https://dinnermadeeasy.netlify.app',
     methods: ['GET', 'POST', 'DELETE', 'PUT'],
     credentials: true
 }
