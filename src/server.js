@@ -24,7 +24,8 @@ dotenv.config()
 const corsOptions = {
     origin: 'https://dinnermadeeasy.netlify.app',
     methods: ['GET', 'POST', 'DELETE', 'PUT'],
-    credentials: true
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization']
 }
 
 const PORT = process.env.PORT || 3000;
