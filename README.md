@@ -6,6 +6,7 @@ Backend API for Dinner Made Easy: A recipe management site designed to help make
 
 To run API run command ```npm run start```
 
+Front-End: https://github.com/genesisquinn/easy-dinner-fe
 
 # Technologies
 - Express/Node.js
