@@ -22,7 +22,7 @@ const requestRouter = require('./routes/request');
 dotenv.config()
 
 const corsOptions = {
-    origin: '*',
+    origin: 'https://dinnermadeeasy.netlify.app',
     methods: ['GET', 'POST', 'DELETE', 'PUT'],
     credentials: true,
     // allowedHeaders: ['Content-Type', 'Authorization']
@@ -51,7 +51,7 @@ app.use(passport.session());
 
 configurePassport(passport);
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
